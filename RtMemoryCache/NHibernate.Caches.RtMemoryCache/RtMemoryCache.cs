@@ -38,10 +38,10 @@ namespace NHibernate.Caches.RtMemoryCache
 	{
 		private static readonly IInternalLogger Log = LoggerProvider.LoggerFor(typeof(RtMemoryCache));
 		private string _regionPrefix;
-		private readonly ObjectCache _cache;
+		protected readonly ObjectCache Cache;
 
 		// The name of the cache key used to clear the cache. All cached items depend on this key.
-		private readonly string _rootCacheKey;
+		protected readonly string RootCacheKey;
 		private bool _rootCacheKeyStored;
 		private static readonly TimeSpan DefaultExpiration = TimeSpan.FromSeconds(300);
 		private const bool _defaultUseSlidingExpiration = false;
@@ -83,10 +83,10 @@ namespace NHibernate.Caches.RtMemoryCache
 		public RtMemoryCache(string region, IDictionary<string, string> properties)
 		{
 			Region = region;
-			_cache = MemoryCache.Default;
+			Cache = MemoryCache.Default;
 			Configure(properties);
 
-			_rootCacheKey = GenerateRootCacheKey();
+			RootCacheKey = GenerateRootCacheKey();
 			StoreRootCacheKey();
 		}
 
@@ -173,12 +173,12 @@ namespace NHibernate.Caches.RtMemoryCache
 			return sliding;
 		}
 
-		private string GetCacheKey(object key)
+		protected virtual string GetCacheKey(object key)
 		{
 			return string.Concat(_cacheKeyPrefix, _regionPrefix, Region, ":", key.ToString(), "@", key.GetHashCode());
 		}
 
-		public object Get(object key)
+		public virtual object Get(object key)
 		{
 			if (key == null)
 			{
@@ -187,7 +187,7 @@ namespace NHibernate.Caches.RtMemoryCache
 			var cacheKey = GetCacheKey(key);
 			Log.DebugFormat("Fetching object '{0}' from the cache.", cacheKey);
 
-			var obj = _cache.Get(cacheKey);
+			var obj = Cache.Get(cacheKey);
 			if (obj == null)
 			{
 				return null;
@@ -197,7 +197,7 @@ namespace NHibernate.Caches.RtMemoryCache
 			return key.Equals(de.Key) ? de.Value : null;
 		}
 
-		public void Put(object key, object value)
+		public virtual void Put(object key, object value)
 		{
 			if (key == null)
 			{
@@ -208,33 +208,30 @@ namespace NHibernate.Caches.RtMemoryCache
 				throw new ArgumentNullException(nameof(value), "null value not allowed");
 			}
 			var cacheKey = GetCacheKey(key);
-			if (_cache[cacheKey] != null)
+			if (Cache[cacheKey] != null)
 			{
 				Log.DebugFormat("updating value of key '{0}' to '{1}'.", cacheKey, value);
 
 				// Remove the key to re-add it again below
-				_cache.Remove(cacheKey);
+				Cache.Remove(cacheKey);
 			}
 			else
 			{
 				Log.DebugFormat("adding new data: key={0}&value={1}", cacheKey, value);
 			}
 
-			if (!_rootCacheKeyStored)
-			{
-				StoreRootCacheKey();
-			}
+			StoreRootCacheKey();
 
-			_cache.Add(cacheKey, new DictionaryEntry(key, value),
+			Cache.Add(cacheKey, new DictionaryEntry(key, value),
 			          new CacheItemPolicy
 			          {
 			              AbsoluteExpiration = UseSlidingExpiration ? ObjectCache.InfiniteAbsoluteExpiration : DateTimeOffset.UtcNow.Add(Expiration),
 			              SlidingExpiration = UseSlidingExpiration ? Expiration : ObjectCache.NoSlidingExpiration,
-			              ChangeMonitors = {_cache.CreateCacheEntryChangeMonitor(new[] {_rootCacheKey})}
+			              ChangeMonitors = {Cache.CreateCacheEntryChangeMonitor(new[] {RootCacheKey})}
 			          });
 		}
 
-		public void Remove(object key)
+		public virtual void Remove(object key)
 		{
 			if (key == null)
 			{
@@ -242,7 +239,7 @@ namespace NHibernate.Caches.RtMemoryCache
 			}
 			var cacheKey = GetCacheKey(key);
 			Log.DebugFormat("removing item with key: {0}", cacheKey);
-			_cache.Remove(cacheKey);
+			Cache.Remove(cacheKey);
 		}
 
 		public void Clear()
@@ -264,12 +261,19 @@ namespace NHibernate.Caches.RtMemoryCache
 			_rootCacheKeyStored = false;
 		}
 
-		private void StoreRootCacheKey()
+		/// <summary>
+		/// Stores the root key in the cache only if the key is currently not stored.
+		/// </summary>
+		protected void StoreRootCacheKey()
 		{
+			if (_rootCacheKeyStored)
+			{
+				return;
+			}
 			_rootCacheKeyStored = true;
-			_cache.Add(
-				_rootCacheKey,
-				_rootCacheKey,
+			Cache.Add(
+				RootCacheKey,
+				RootCacheKey,
 				new CacheItemPolicy
 				{
 					AbsoluteExpiration = ObjectCache.InfiniteAbsoluteExpiration,
@@ -281,7 +285,7 @@ namespace NHibernate.Caches.RtMemoryCache
 
 		private void RemoveRootCacheKey()
 		{
-			_cache.Remove(_rootCacheKey);
+			Cache.Remove(RootCacheKey);
 		}
 
 		public void Destroy()

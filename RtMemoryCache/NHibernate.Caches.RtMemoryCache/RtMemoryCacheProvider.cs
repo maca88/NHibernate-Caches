@@ -96,6 +96,11 @@ namespace NHibernate.Caches.RtMemoryCache
 
 				Log.DebugFormat("building cache with region: {0}, properties: {1}" , regionName, sb.ToString());
 			}
+			return CreateCache(regionName, properties);
+		}
+
+		protected virtual ICache CreateCache(string regionName, IDictionary<string, string> properties)
+		{
 			return new RtMemoryCache(regionName, properties);
 		}
 
