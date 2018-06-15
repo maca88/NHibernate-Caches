@@ -68,6 +68,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NHibernate.Caches.CoreDistr
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NHibernate.Caches.CoreDistributedCache.Memcached", "CoreDistributedCache\NHibernate.Caches.CoreDistributedCache.Memcached\NHibernate.Caches.CoreDistributedCache.Memcached.csproj", "{CB7BEB99-1964-4D83-86AD-100439E04186}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NHibernate.Caches.StackExRedis", "StackExRedis\NHibernate.Caches.StackExRedis\NHibernate.Caches.StackExRedis.csproj", "{726AA9C7-0EA4-47C0-B65D-D42CD3ECEF82}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NHibernate.Caches.StackExRedis.Tests", "StackExRedis\NHibernate.Caches.StackExRedis.Tests\NHibernate.Caches.StackExRedis.Tests.csproj", "{CC2A7851-B1CD-49F7-ACD4-08604C2ACC63}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -174,6 +178,14 @@ Global
 		{CB7BEB99-1964-4D83-86AD-100439E04186}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CB7BEB99-1964-4D83-86AD-100439E04186}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CB7BEB99-1964-4D83-86AD-100439E04186}.Release|Any CPU.Build.0 = Release|Any CPU
+		{726AA9C7-0EA4-47C0-B65D-D42CD3ECEF82}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{726AA9C7-0EA4-47C0-B65D-D42CD3ECEF82}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{726AA9C7-0EA4-47C0-B65D-D42CD3ECEF82}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{726AA9C7-0EA4-47C0-B65D-D42CD3ECEF82}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CC2A7851-B1CD-49F7-ACD4-08604C2ACC63}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CC2A7851-B1CD-49F7-ACD4-08604C2ACC63}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CC2A7851-B1CD-49F7-ACD4-08604C2ACC63}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CC2A7851-B1CD-49F7-ACD4-08604C2ACC63}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -204,5 +216,7 @@ Global
 		{63AD02AD-1F35-4341-A4C7-7EAEA238F08C} = {9BC335BB-4F31-44B4-9C2D-5A97B4742675}
 		{03A80D4B-6C72-4F31-8680-DD6119E34CDF} = {9BC335BB-4F31-44B4-9C2D-5A97B4742675}
 		{CB7BEB99-1964-4D83-86AD-100439E04186} = {9BC335BB-4F31-44B4-9C2D-5A97B4742675}
+		{726AA9C7-0EA4-47C0-B65D-D42CD3ECEF82} = {9BC335BB-4F31-44B4-9C2D-5A97B4742675}
+		{CC2A7851-B1CD-49F7-ACD4-08604C2ACC63} = {55271617-8CB8-4225-B338-069033160497}
 	EndGlobalSection
 EndGlobal
