@@ -19,6 +19,10 @@ install:
 - curl -L -O -S -s http://downloads.northscale.com/memcached-1.4.5-amd64.zip
 - 7z x memcached-1.4.5-amd64.zip
 - ps: $MemCached = Start-Process memcached-amd64\memcached.exe -PassThru
+# redis server
+- curl -L -O -S -s https://github.com/ServiceStack/redis-windows/raw/master/downloads/redis64-2.8.17.zip
+- 7z x redis64-2.8.17.zip
+- ps: $Redis = Start-Process redis-server.exe redis.windows.conf -PassThru
 before_build:
 - which msbuild.exe
 - nuget restore NHibernate.Caches.Everything.sln
@@ -102,7 +106,7 @@ test_script:
         $TestsFailed = $FALSE
         #netFx tests
         If ($env:TESTS -eq 'net') {
-            @('EnyimMemcached', 'Prevalence', 'RtMemoryCache', 'SysCache', 'SysCache2', 'CoreMemoryCache', 'CoreDistributedCache') | ForEach-Object {
+            @('EnyimMemcached', 'Prevalence', 'RtMemoryCache', 'SysCache', 'SysCache2', 'CoreMemoryCache', 'CoreDistributedCache', 'StackExRedis') | ForEach-Object {
                 nunit3-console (Join-Path $env:APPVEYOR_BUILD_FOLDER "$_\NHibernate.Caches.$_.Tests\bin\$env:CONFIGURATION\$env:NETTARGETFX\NHibernate.Caches.$_.Tests.dll") "--result=$_-NetTestResult.xml;format=AppVeyor"
                 If ($LASTEXITCODE -ne 0) {
                     $TestsFailed = $TRUE
@@ -112,7 +116,7 @@ test_script:
 
         #core tests
         If ($env:TESTS -eq 'core') {
-            @('CoreMemoryCache', 'CoreDistributedCache') | ForEach-Object {
+            @('CoreMemoryCache', 'CoreDistributedCache', 'StackExRedis') | ForEach-Object {
                 dotnet (Join-Path $env:APPVEYOR_BUILD_FOLDER "$_\NHibernate.Caches.$_.Tests\bin\$env:CONFIGURATION\$env:CORETARGETFX\NHibernate.Caches.$_.Tests.dll") --labels=before --nocolor "--result=$_-CoreTestResult.xml"
                 If ($LASTEXITCODE -ne 0) {
                     $TestsFailed = $TRUE
@@ -140,3 +144,4 @@ artifacts:
     name: Binaries
 on_finish:
 - ps: Stop-Process -Id $MemCached.Id
+- ps: Stop-Process -Id $Redis.Id
