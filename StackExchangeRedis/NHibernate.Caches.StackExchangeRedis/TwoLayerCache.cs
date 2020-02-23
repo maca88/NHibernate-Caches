@@ -68,10 +68,14 @@ namespace NHibernate.Caches.StackExchangeRedis
 			var connectionMultiplexer = configuration.ConnectionMultiplexer;
 			var invalidationChannel = string.Concat("{", configuration.RegionKey, "}@", "Invalidation");
 			_invalidationChannel = invalidationChannel;
-			connectionMultiplexer.GetSubscriber().Subscribe(invalidationChannel).OnMessage((Action<ChannelMessage>) OnInvalidationMessage);
 			connectionMultiplexer.ConnectionFailed += OnConnectionFailed;
 			connectionMultiplexer.ErrorMessage += OnErrorMessage;
 			connectionMultiplexer.ConnectionRestored += OnConnectionRestored;
+			SetupSubscription(connectionMultiplexer, invalidationChannel);
+			if (connectionMultiplexer is IResilientConnectionMultiplexer resilientConnectionMultiplexer)
+			{
+				resilientConnectionMultiplexer.Reconnected += (sender, newMultiplexer) => SetupSubscription(newMultiplexer, invalidationChannel);
+			}
 		}
 
 		public void Put(RedisKey cacheKey, object value)
@@ -478,6 +482,11 @@ namespace NHibernate.Caches.StackExchangeRedis
 			{
 				_memoryCache.Remove(dependencyKey);
 			}
+		}
+
+		private void SetupSubscription(IConnectionMultiplexer connectionMultiplexer, string channel)
+		{
+			connectionMultiplexer.GetSubscriber().Subscribe(channel).OnMessage(OnInvalidationMessage);
 		}
 
 		private void OnConnectionFailed(object sender, ConnectionFailedEventArgs e)

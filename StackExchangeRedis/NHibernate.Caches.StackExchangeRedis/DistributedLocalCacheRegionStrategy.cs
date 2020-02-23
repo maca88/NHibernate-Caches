@@ -78,8 +78,11 @@ namespace NHibernate.Caches.StackExchangeRedis
 			ConnectionMultiplexer.ConnectionFailed += OnConnectionFailed;
 			ConnectionMultiplexer.ConnectionRestored += OnConnectionRestored;
 			ConnectionMultiplexer.ErrorMessage += OnErrorMessage;
-			_subscriber.Subscribe(_synchronizationChannel).OnMessage((Action<ChannelMessage>) OnSynchronizationMessage);
-			_subscriber.Subscribe(GetClientChannel(_clientId)).OnMessage((Action<ChannelMessage>) OnPrivateMessage);
+			SetupSubscription();
+			if (connectionMultiplexer is IResilientConnectionMultiplexer resilientConnectionMultiplexer)
+			{
+				resilientConnectionMultiplexer.Reconnected += OnReconnected;
+			}
 		}
 
 		/// <inheritdoc />
@@ -581,6 +584,20 @@ namespace NHibernate.Caches.StackExchangeRedis
 			}
 
 			return cacheValue.Value;
+		}
+
+		private void SetupSubscription()
+		{
+			_subscriber.Subscribe(_synchronizationChannel).OnMessage(OnSynchronizationMessage);
+			_subscriber.Subscribe(GetClientChannel(_clientId)).OnMessage(OnPrivateMessage);
+		}
+
+		private void OnReconnected(object sender, IConnectionMultiplexer multiplexer)
+		{
+			Log.Warn("The connection to Redis was recreated, clearing the local cache.");
+			SetupSubscription();
+			// As we don't know if there was any message during the connection drop, we have to clear the local cache
+			TryClearLocal(DateTime.UtcNow.Ticks, _clientId, false);
 		}
 
 		private void OnConnectionRestored(object sender, ConnectionFailedEventArgs e)

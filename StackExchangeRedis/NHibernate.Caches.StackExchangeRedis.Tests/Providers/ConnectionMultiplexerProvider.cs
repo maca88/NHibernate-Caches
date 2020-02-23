@@ -1,4 +1,5 @@
-﻿using StackExchange.Redis;
+﻿using System.Collections.Generic;
+using StackExchange.Redis;
 
 namespace NHibernate.Caches.StackExchangeRedis.Tests.Providers
 {
@@ -8,7 +9,7 @@ namespace NHibernate.Caches.StackExchangeRedis.Tests.Providers
 
 		public IConnectionMultiplexer Get(string configuration)
 		{
-			var connectionMultiplexer = (ConnectionMultiplexer) _default.Get(configuration);
+			var connectionMultiplexer = (ConnectionMultiplexer) _default.Get(configuration, new Dictionary<string, string>());
 			connectionMultiplexer.IncludeDetailInExceptions = true;
 			connectionMultiplexer.IncludePerformanceCountersInExceptions = true;
 			return connectionMultiplexer;

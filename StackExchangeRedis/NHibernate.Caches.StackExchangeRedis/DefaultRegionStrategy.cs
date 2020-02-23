@@ -76,9 +76,15 @@ namespace NHibernate.Caches.StackExchangeRedis
 			_databaseIndex = Database.Database;
 			InitializeVersion();
 
-			if (_usePubSub)
+			if (!_usePubSub)
 			{
-				ConnectionMultiplexer.GetSubscriber().Subscribe(RegionKey).OnMessage((Action<ChannelMessage>) OnVersionMessage);
+				return;
+			}
+
+			SetupSubscription();
+			if (connectionMultiplexer is IResilientConnectionMultiplexer resilientConnectionMultiplexer)
+			{
+				resilientConnectionMultiplexer.Reconnected += (sender, multiplexer) => SetupSubscription();
 			}
 		}
 
@@ -404,6 +410,11 @@ namespace NHibernate.Caches.StackExchangeRedis
 			CurrentVersion = newVersion;
 			_currentVersionArray = new RedisValue[] {newVersion};
 			OnVersionUpdate(oldVersion, newVersion);
+		}
+
+		private void SetupSubscription()
+		{
+			ConnectionMultiplexer.GetSubscriber().Subscribe(RegionKey).OnMessage(OnVersionMessage);
 		}
 
 		private void OnVersionMessage(ChannelMessage channel)

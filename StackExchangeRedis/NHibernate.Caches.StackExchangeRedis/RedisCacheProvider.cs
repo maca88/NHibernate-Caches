@@ -157,7 +157,7 @@ namespace NHibernate.Caches.StackExchangeRedis
 		/// <param name="properties">NHibernate configuration settings.</param>
 		protected virtual void Start(string configurationString, IDictionary<string, string> properties)
 		{
-			ConnectionMultiplexer = CacheConfiguration.ConnectionMultiplexerProvider.Get(configurationString);
+			ConnectionMultiplexer = CacheConfiguration.ConnectionMultiplexerProvider.Get(configurationString, properties);
 		}
 
 		/// <summary>
